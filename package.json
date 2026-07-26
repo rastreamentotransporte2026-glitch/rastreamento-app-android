@@ -1,0 +1,16 @@
+{
+  "name": "rastreamento-sesma-app",
+  "version": "1.0.0",
+  "description": "Aplicativo Android do motorista - Rastreamento SESMA",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor-community/background-geolocation": "^1.2.20"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
