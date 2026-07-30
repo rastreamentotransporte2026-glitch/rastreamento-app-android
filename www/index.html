@@ -354,12 +354,12 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  const ACCURACY_MAXIMA_ACEITAVEL_M = 100; // descarta leitura de GPS com precisão pior que isso
+  const ACCURACY_MAXIMA_ACEITAVEL_M = 50; // descarta leitura de GPS com precisão pior que isso
 
   // ---------- GPS ADAPTATIVO POR VELOCIDADE ----------
   function intervaloMinimoPorVelocidade(velocidadeKmh) {
     const v = velocidadeKmh || 0;
-    if (v <= 0.5) return 30000;   // parado: 30s
+    if (v <= 0.5) return 15000;   // parado: 15s (reduzido de 30s para corrigir posição mais rápido)
     if (v <= 20) return 10000;    // até 20 km/h: 10s
     if (v <= 60) return 5000;     // 20 a 60 km/h: 5s
     if (v <= 100) return 3000;    // 60 a 100 km/h: 3s
@@ -426,6 +426,35 @@
   // ---------- PLUGIN DE SEGUNDO PLANO (mantém o GPS ativo com a tela apagada) ----------
   let usandoBackgroundGeolocation = false;
   let watcherIdBackgroundGeo = null;
+  const CHAVE_WATCHER_BACKGROUND = 'rastreamento_watcher_bg_id';
+
+  function salvarWatcherIdLocal(id) {
+    try { localStorage.setItem(CHAVE_WATCHER_BACKGROUND, id); } catch (e) { console.error('Não foi possível salvar o watcherId', e); }
+  }
+
+  function lerWatcherIdLocal() {
+    try { return localStorage.getItem(CHAVE_WATCHER_BACKGROUND); } catch (e) { return null; }
+  }
+
+  function limparWatcherIdLocal() {
+    try { localStorage.removeItem(CHAVE_WATCHER_BACKGROUND); } catch (e) { /* ignora */ }
+  }
+
+  // Desliga qualquer rastreamento em segundo plano que tenha ficado órfão de uma sessão
+  // anterior (por exemplo, se o Android reiniciou o app no meio de uma corrida e o
+  // identificador antigo não estava mais na memória do JavaScript).
+  async function limparWatcherOrfao() {
+    const idOrfao = lerWatcherIdLocal();
+    if (!idOrfao) return;
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
+        await window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({ id: idOrfao });
+      }
+    } catch (e) {
+      console.error('Não foi possível desligar o rastreamento órfão anterior', e);
+    }
+    limparWatcherIdLocal();
+  }
 
   function converterLocationDoPlugin(location) {
     return {
@@ -496,7 +525,11 @@
       : 'Rastreamento em modo padrão (mantenha o app aberto ou a tela ligada quando possível)';
   }
 
-  function iniciarRastreamentoContinuo() {
+  async function iniciarRastreamentoContinuo() {
+    // Antes de criar um novo watcher, garante que nenhum rastreamento de uma
+    // sessão anterior ficou esquecido rodando escondido (rastreamento órfão)
+    await limparWatcherOrfao();
+
     const pluginDisponivel = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation;
 
     if (pluginDisponivel) {
@@ -522,6 +555,7 @@
         }
       ).then((id) => {
         watcherIdBackgroundGeo = id;
+        salvarWatcherIdLocal(id);
         atualizarIndicadorMetodoRastreamento();
         // Esse plugin não garante um intervalo fixo quando o veículo está parado
         // (só reage a movimento), então mantemos o reforço rodando em paralelo
@@ -565,6 +599,7 @@
       watcherIdBackgroundGeo = null;
       usandoBackgroundGeolocation = false;
     }
+    limparWatcherIdLocal();
     if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
     if (reforcoIntervalId) { clearInterval(reforcoIntervalId); reforcoIntervalId = null; }
     if (reforcoTimeoutId) { clearTimeout(reforcoTimeoutId); reforcoTimeoutId = null; }
@@ -650,6 +685,11 @@
       return;
     }
 
+    if (!confirm(`Deseja realmente iniciar a corrida do veículo ${placa}?`)) {
+      btnIniciarEl.disabled = false;
+      return;
+    }
+
     document.getElementById('aviso-duplicata').style.display = 'none';
 
     // Verifica se já existe corrida em aberto para essa placa (esquecida em outro celular, por exemplo)
@@ -730,10 +770,39 @@
     }
   }
 
+  // Tenta capturar uma última posição fresca antes de encerrar, com prazo curto
+  // pra não travar o motorista esperando caso o GPS não responda a tempo.
+  function capturarPosicaoFinalComPrazo(prazoMs) {
+    return new Promise((resolve) => {
+      let jaResolveu = false;
+      const timer = setTimeout(() => {
+        if (!jaResolveu) { jaResolveu = true; resolve(null); }
+      }, prazoMs);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (!jaResolveu) { jaResolveu = true; clearTimeout(timer); resolve(pos); }
+        },
+        () => {
+          if (!jaResolveu) { jaResolveu = true; clearTimeout(timer); resolve(null); }
+        },
+        { enableHighAccuracy: true, timeout: prazoMs, maximumAge: 0 }
+      );
+    });
+  }
+
   document.getElementById('btnFinalizar').addEventListener('click', async () => {
     if (!viagemId) return;
 
+    if (!confirm('Deseja realmente finalizar a corrida?')) return;
+
     const viagemIdFinalizando = viagemId;
+
+    mostrarStatus('Capturando posição final...', 'ativo');
+    const posFinal = await capturarPosicaoFinalComPrazo(8000);
+    if (posFinal) {
+      processarNovaPosicao(posFinal);
+    }
+
     const fimIso = new Date().toISOString();
 
     // Libera a tela e para o rastreamento na hora, mesmo sem internet no momento
