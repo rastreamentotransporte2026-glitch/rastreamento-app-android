@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Rastreamento SESMA</string>
-    <string name="title_activity_main">Rastreamento SESMA</string>
+    <string name="app_name">SESMA</string>
+    <string name="title_activity_main">SESMA</string>
     <string name="package_name">br.gov.belem.sesma.rastreamento</string>
     <string name="custom_url_scheme">br.gov.belem.sesma.rastreamento</string>
 </resources>
