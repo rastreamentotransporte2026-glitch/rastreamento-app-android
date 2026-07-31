@@ -11,10 +11,10 @@ INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidM
 	android:name
 		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:28:13-62
 manifest
-ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-41:12
-INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-41:12
-INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-41:12
-INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-41:12
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-47:12
+INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-47:12
+INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-47:12
+INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:2:1-47:12
 MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:2:1-31:12
 MERGED from [:capacitor-android] /workspaces/rastreamento-app-android/node_modules/@capacitor/android/capacitor/build/intermediates/merged_manifest/debug/AndroidManifest.xml:2:1-7:12
 MERGED from [:capacitor-cordova-android-plugins] /workspaces/rastreamento-app-android/android/capacitor-cordova-android-plugins/build/intermediates/merged_manifest/debug/AndroidManifest.xml:2:1-11:12
@@ -132,9 +132,51 @@ ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidMani
 	android:name
 		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:22:27-74
 uses-permission#android.permission.INTERNET
-ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:40:5-67
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:38:5-67
 	android:name
-		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:40:22-64
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:38:22-64
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:39:5-79
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:8:5-79
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:8:5-79
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:39:22-76
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:40:5-81
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:7:5-81
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:7:5-81
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:40:22-78
+uses-permission#android.permission.ACCESS_BACKGROUND_LOCATION
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:41:5-85
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:41:22-82
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:42:5-77
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:9:5-77
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:9:5-77
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:42:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_LOCATION
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:43:5-86
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:14:5-86
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:14:5-86
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:43:22-83
+uses-permission#android.permission.WAKE_LOCK
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:44:5-68
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:44:22-65
+uses-permission#android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:45:5-95
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:45:22-92
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:46:5-77
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:19:5-77
+MERGED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:19:5-77
+	android:name
+		ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:46:22-74
 meta-data#android.support.FILE_PROVIDER_PATHS
 ADDED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml:32:13-34:64
 	android:resource
@@ -231,26 +273,6 @@ MERGED from [org.apache.cordova:framework:10.1.1] /home/codespace/.gradle/caches
 		INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from /workspaces/rastreamento-app-android/android/app/src/main/AndroidManifest.xml
-uses-permission#android.permission.ACCESS_COARSE_LOCATION
-ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:7:5-81
-	android:name
-		ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:7:22-78
-uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:8:5-79
-	android:name
-		ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:8:22-76
-uses-permission#android.permission.FOREGROUND_SERVICE
-ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:9:5-77
-	android:name
-		ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:9:22-74
-uses-permission#android.permission.FOREGROUND_SERVICE_LOCATION
-ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:14:5-86
-	android:name
-		ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:14:22-83
-uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:19:5-77
-	android:name
-		ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:19:22-74
 uses-feature#android.hardware.location.gps
 ADDED from [:capacitor-community-background-geolocation] /workspaces/rastreamento-app-android/node_modules/@capacitor-community/background-geolocation/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml:21:5-66
 	android:name

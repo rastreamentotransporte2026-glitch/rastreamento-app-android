@@ -593,12 +593,28 @@
     agendarProximaLeituraDeReforco();
   }
 
-  function pararRastreamentoContinuo() {
-    if (usandoBackgroundGeolocation && watcherIdBackgroundGeo && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
-      window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({ id: watcherIdBackgroundGeo });
-      watcherIdBackgroundGeo = null;
-      usandoBackgroundGeolocation = false;
+  async function pararRastreamentoContinuo() {
+    // Usa o identificador salvo no armazenamento permanente como fonte da verdade,
+    // porque ele sobrevive mesmo se o app tiver reiniciado sozinho no meio da corrida.
+    const idParaDesligar = lerWatcherIdLocal() || watcherIdBackgroundGeo;
+
+    if (idParaDesligar && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
+      let desligouComSucesso = false;
+      for (let tentativa = 1; tentativa <= 3 && !desligouComSucesso; tentativa++) {
+        try {
+          await window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({ id: idParaDesligar });
+          desligouComSucesso = true;
+        } catch (e) {
+          console.error(`Tentativa ${tentativa} de desligar o rastreamento em segundo plano falhou`, e);
+        }
+      }
+      if (!desligouComSucesso) {
+        console.error('Não foi possível confirmar o desligamento do rastreamento em segundo plano após 3 tentativas.');
+      }
     }
+
+    watcherIdBackgroundGeo = null;
+    usandoBackgroundGeolocation = false;
     limparWatcherIdLocal();
     if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
     if (reforcoIntervalId) { clearInterval(reforcoIntervalId); reforcoIntervalId = null; }
@@ -805,8 +821,8 @@
 
     const fimIso = new Date().toISOString();
 
-    // Libera a tela e para o rastreamento na hora, mesmo sem internet no momento
-    pararRastreamentoContinuo();
+    // Libera a tela e para o rastreamento, esperando a confirmação real do desligamento
+    await pararRastreamentoContinuo();
     limparSessaoLocal();
     document.getElementById('tela-corrida').style.display = 'none';
     document.getElementById('tela-form').style.display = 'block';
@@ -835,7 +851,7 @@
       const { data, error } = await db.from('viagens').select('status').eq('id', viagemId).single();
       if (error) return;
       if (data && data.status === 'finalizada') {
-        pararRastreamentoContinuo();
+        await pararRastreamentoContinuo();
         limparSessaoLocal();
         document.getElementById('tela-corrida').style.display = 'none';
         document.getElementById('tela-form').style.display = 'block';

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "109375961368",
+    "project_id": "rastreamento-sesma",
+    "storage_bucket": "rastreamento-sesma.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109375961368:android:a8e5669b3206986f85866d",
+        "android_client_info": {
+          "package_name": "br.gov.belem.sesma.rastreamento"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrXj33UqY3-W9W8aO7_ARXyCh1AwrbllI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
