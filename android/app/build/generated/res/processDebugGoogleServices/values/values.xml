@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">109375961368</string>
+    <string name="google_api_key" translatable="false">AIzaSyDrXj33UqY3-W9W8aO7_ARXyCh1AwrbllI</string>
+    <string name="google_app_id" translatable="false">1:109375961368:android:a8e5669b3206986f85866d</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDrXj33UqY3-W9W8aO7_ARXyCh1AwrbllI</string>
+    <string name="google_storage_bucket" translatable="false">rastreamento-sesma.firebasestorage.app</string>
+    <string name="project_id" translatable="false">rastreamento-sesma</string>
+</resources>

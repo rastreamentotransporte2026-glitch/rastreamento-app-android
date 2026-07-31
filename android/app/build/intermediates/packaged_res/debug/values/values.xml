@@ -3,7 +3,13 @@
     <color name="ic_launcher_background">#FFFFFF</color>
     <string name="app_name">SESMA</string>
     <string name="custom_url_scheme">br.gov.belem.sesma.rastreamento</string>
+    <string name="gcm_defaultSenderId" translatable="false">109375961368</string>
+    <string name="google_api_key" translatable="false">AIzaSyDrXj33UqY3-W9W8aO7_ARXyCh1AwrbllI</string>
+    <string name="google_app_id" translatable="false">1:109375961368:android:a8e5669b3206986f85866d</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDrXj33UqY3-W9W8aO7_ARXyCh1AwrbllI</string>
+    <string name="google_storage_bucket" translatable="false">rastreamento-sesma.firebasestorage.app</string>
     <string name="package_name">br.gov.belem.sesma.rastreamento</string>
+    <string name="project_id" translatable="false">rastreamento-sesma</string>
     <string name="title_activity_main">SESMA</string>
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         

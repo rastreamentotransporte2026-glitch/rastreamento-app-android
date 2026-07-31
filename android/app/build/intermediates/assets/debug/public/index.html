@@ -162,6 +162,48 @@
   let inicioVelocidadeBaixa = null;
   let enviandoFilaOffline = false;
 
+  // ---------- LOCALIZAÇÃO: usa o plugin oficial do Capacitor quando disponível ----------
+  // O plugin @capacitor/geolocation usa o Fused Location Provider no Android (GPS +
+  // Wi-Fi + antena de celular combinados), o que costuma ser bem mais rápido pra
+  // conseguir a primeira posição do que o GPS puro usado pelo navegador padrão.
+  // Se o plugin não estiver disponível por algum motivo, cai de volta pro padrão do
+  // navegador (navigator.geolocation), sem quebrar nada.
+  const geoNativo = navigator.geolocation;
+  const geo = {
+    getCurrentPosition(sucesso, erro, opcoes) {
+      const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+      if (plugin) {
+        plugin.getCurrentPosition(opcoes).then(sucesso).catch((e) => erro && erro(e));
+      } else {
+        geoNativo.getCurrentPosition(sucesso, erro, opcoes);
+      }
+    },
+    watchPosition(sucesso, erro, opcoes) {
+      const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+      if (plugin) {
+        const controle = { plugin: true, idReal: null, cancelado: false };
+        plugin.watchPosition(opcoes, (pos, err) => {
+          if (err) { erro && erro(err); return; }
+          if (pos) sucesso(pos);
+        }).then((id) => {
+          controle.idReal = id;
+          if (controle.cancelado) plugin.clearWatch({ id });
+        }).catch((e) => erro && erro(e));
+        return controle;
+      }
+      return geoNativo.watchPosition(sucesso, erro, opcoes);
+    },
+    clearWatch(watchId) {
+      const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation;
+      if (plugin && watchId && watchId.plugin) {
+        watchId.cancelado = true;
+        if (watchId.idReal) plugin.clearWatch({ id: watchId.idReal });
+        return;
+      }
+      if (!plugin) geoNativo.clearWatch(watchId);
+    }
+  };
+
   function mostrarStatus(msg, tipo) {
     const el = document.getElementById('status');
     el.textContent = msg;
@@ -398,8 +440,13 @@
     }
 
     if (accuracy !== null && accuracy !== undefined && accuracy > ACCURACY_MAXIMA_ACEITAVEL_M) {
-      console.warn('Posição descartada por baixa precisão do GPS (accuracy: ' + Math.round(accuracy) + 'm)');
-      return; // GPS ainda impreciso demais (prédio alto, garagem, sinal fraco), não vale a pena guardar
+      const tempoSemEnviarMs = ultimoEnvioMs ? (timestampPosicao - ultimoEnvioMs) : 0;
+      const TEMPO_MAXIMO_SEM_ATUALIZAR_MS = 60000; // depois de 1 minuto sem nenhuma posição aceita, aceita mesmo com precisão ruim, pra não travar o carro no mapa
+      if (tempoSemEnviarMs < TEMPO_MAXIMO_SEM_ATUALIZAR_MS) {
+        console.warn('Posição descartada por baixa precisão do GPS (accuracy: ' + Math.round(accuracy) + 'm)');
+        return; // GPS ainda impreciso demais (prédio alto, garagem, sinal fraco), não vale a pena guardar
+      }
+      console.warn('Aceitando posição com precisão ruim (accuracy: ' + Math.round(accuracy) + 'm) porque já fazia tempo demais sem nenhuma atualização.');
     }
 
     const intervaloMinimoAtual = intervaloMinimoPorVelocidade(ultimaVelocidadeConhecida);
@@ -425,7 +472,9 @@
 
   // ---------- PLUGIN DE SEGUNDO PLANO (mantém o GPS ativo com a tela apagada) ----------
   let usandoBackgroundGeolocation = false;
+  let firebaseTokenAtual = null;
   let watcherIdBackgroundGeo = null;
+  let criacaoDoWatcherEmAndamento = null; // guarda a Promise enquanto o watcher ainda está sendo criado
   const CHAVE_WATCHER_BACKGROUND = 'rastreamento_watcher_bg_id';
 
   function salvarWatcherIdLocal(id) {
@@ -479,7 +528,7 @@
       }
     } else {
       // Celular foi desbloqueado / app voltou pra frente: manda uma posição fresca na hora
-      navigator.geolocation.getCurrentPosition(
+      geo.getCurrentPosition(
         processarNovaPosicao,
         (err) => console.error('Erro ao capturar posição ao retornar', err),
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
@@ -503,7 +552,7 @@
   function agendarProximaLeituraDeReforco() {
     const intervalo = intervaloMinimoPorVelocidade(ultimaVelocidadeConhecida);
     reforcoTimeoutId = setTimeout(() => {
-      navigator.geolocation.getCurrentPosition(
+      geo.getCurrentPosition(
         (pos) => {
           processarNovaPosicao(pos);
           agendarProximaLeituraDeReforco();
@@ -526,62 +575,72 @@
   }
 
   async function iniciarRastreamentoContinuo() {
-    // Antes de criar um novo watcher, garante que nenhum rastreamento de uma
-    // sessão anterior ficou esquecido rodando escondido (rastreamento órfão)
-    await limparWatcherOrfao();
+    const operacao = (async () => {
+      // Antes de criar um novo watcher, garante que nenhum rastreamento de uma
+      // sessão anterior ficou esquecido rodando escondido (rastreamento órfão)
+      await limparWatcherOrfao();
 
-    const pluginDisponivel = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation;
+      const pluginDisponivel = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation;
 
-    if (pluginDisponivel) {
-      usandoBackgroundGeolocation = true;
-      const { BackgroundGeolocation } = window.Capacitor.Plugins;
+      if (pluginDisponivel) {
+        usandoBackgroundGeolocation = true;
+        const { BackgroundGeolocation } = window.Capacitor.Plugins;
 
-      BackgroundGeolocation.addWatcher(
-        {
-          backgroundMessage: 'Corrida ativa',
-          backgroundTitle: 'SESMA - Rastreamento',
-          requestPermissions: true,
-          stale: false,
-          distanceFilter: 0
-        },
-        (location, error) => {
-          if (error) {
-            console.error('Erro no plugin de segundo plano', error);
-            return;
-          }
-          if (location) {
-            processarNovaPosicao(converterLocationDoPlugin(location));
-          }
+        try {
+          const id = await BackgroundGeolocation.addWatcher(
+            {
+              backgroundMessage: 'Corrida ativa',
+              backgroundTitle: 'SESMA - Rastreamento',
+              requestPermissions: true,
+              stale: false,
+              distanceFilter: 0
+            },
+            (location, error) => {
+              if (error) {
+                console.error('Erro no plugin de segundo plano', error);
+                return;
+              }
+              if (location) {
+                processarNovaPosicao(converterLocationDoPlugin(location));
+              }
+            }
+          );
+          watcherIdBackgroundGeo = id;
+          salvarWatcherIdLocal(id);
+          atualizarIndicadorMetodoRastreamento();
+          // Esse plugin não garante um intervalo fixo quando o veículo está parado
+          // (só reage a movimento), então mantemos o reforço rodando em paralelo
+          // pra forçar uma leitura mesmo parado, conforme a velocidade atual.
+          agendarProximaLeituraDeReforco();
+        } catch (err) {
+          console.error('Não foi possível iniciar o plugin de segundo plano, usando o método padrão', err);
+          usandoBackgroundGeolocation = false;
+          iniciarRastreamentoPadrao();
+          atualizarIndicadorMetodoRastreamento();
         }
-      ).then((id) => {
-        watcherIdBackgroundGeo = id;
-        salvarWatcherIdLocal(id);
-        atualizarIndicadorMetodoRastreamento();
-        // Esse plugin não garante um intervalo fixo quando o veículo está parado
-        // (só reage a movimento), então mantemos o reforço rodando em paralelo
-        // pra forçar uma leitura mesmo parado, conforme a velocidade atual.
-        agendarProximaLeituraDeReforco();
-      }).catch((err) => {
-        console.error('Não foi possível iniciar o plugin de segundo plano, usando o método padrão', err);
-        usandoBackgroundGeolocation = false;
+      } else {
         iniciarRastreamentoPadrao();
         atualizarIndicadorMetodoRastreamento();
-      });
-    } else {
-      iniciarRastreamentoPadrao();
-      atualizarIndicadorMetodoRastreamento();
+      }
+
+      setInterval(() => {
+        tentarEnviarFilaOffline();
+        tentarFinalizarPendente();
+      }, INTERVALO_TENTATIVA_FILA_MS);
+
+      pedirPermissaoNotificacao();
+    })();
+
+    criacaoDoWatcherEmAndamento = operacao;
+    try {
+      await operacao;
+    } finally {
+      criacaoDoWatcherEmAndamento = null;
     }
-
-    setInterval(() => {
-      tentarEnviarFilaOffline();
-      tentarFinalizarPendente();
-    }, INTERVALO_TENTATIVA_FILA_MS);
-
-    pedirPermissaoNotificacao();
   }
 
   function iniciarRastreamentoPadrao() {
-    watchId = navigator.geolocation.watchPosition(
+    watchId = geo.watchPosition(
       processarNovaPosicao,
       (err) => {
         console.error('Erro de geolocalização', err);
@@ -594,6 +653,13 @@
   }
 
   async function pararRastreamentoContinuo() {
+    // Se o rastreamento ainda está no meio do processo de ser criado (corrida
+    // iniciada e finalizada rápido demais), espera esse processo terminar antes
+    // de tentar desligar, senão o identificador ainda não existe pra desligar.
+    if (criacaoDoWatcherEmAndamento) {
+      try { await criacaoDoWatcherEmAndamento; } catch (e) { /* já tratado lá dentro */ }
+    }
+
     // Usa o identificador salvo no armazenamento permanente como fonte da verdade,
     // porque ele sobrevive mesmo se o app tiver reiniciado sozinho no meio da corrida.
     const idParaDesligar = lerWatcherIdLocal() || watcherIdBackgroundGeo;
@@ -616,9 +682,61 @@
     watcherIdBackgroundGeo = null;
     usandoBackgroundGeolocation = false;
     limparWatcherIdLocal();
-    if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    if (watchId) { geo.clearWatch(watchId); watchId = null; }
     if (reforcoIntervalId) { clearInterval(reforcoIntervalId); reforcoIntervalId = null; }
     if (reforcoTimeoutId) { clearTimeout(reforcoTimeoutId); reforcoTimeoutId = null; }
+  }
+
+  // ---------- FIREBASE: recebe comando remoto pra forçar atualização de posição ----------
+  // Isso permite que o painel "acorde" o celular à distância quando perceber que uma
+  // corrida está ativa mas sem posição nova há muito tempo. Só funciona se o app ainda
+  // estiver rodando de algum jeito (mesmo em segundo plano); não acorda um app já morto
+  // pelo Android sem nenhum processo vivo.
+  async function registrarPushNotifications() {
+    const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+    if (!plugin) {
+      console.warn('Plugin de notificações push não disponível.');
+      return;
+    }
+
+    try {
+      const permissao = await plugin.requestPermissions();
+      if (permissao.receive !== 'granted') {
+        console.warn('Permissão de notificações não concedida.');
+        return;
+      }
+
+      await plugin.register();
+
+      plugin.addListener('registration', (token) => {
+        firebaseTokenAtual = token.value;
+        console.log('Token do Firebase registrado.');
+        // Se já tiver uma placa preenchida no formulário, atualiza o token dela na hora
+        const campoPlaca = document.getElementById('placa');
+        const placaAtual = campoPlaca ? (campoPlaca.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+        if (placaAtual) {
+          db.from('veiculos').upsert({ placa: placaAtual, firebase_token: firebaseTokenAtual }).then(() => {});
+        }
+      });
+
+      plugin.addListener('registrationError', (err) => {
+        console.error('Erro ao registrar no Firebase', err);
+      });
+
+      plugin.addListener('pushNotificationReceived', (notificacao) => {
+        const dados = notificacao.data || {};
+        if (dados.acao === 'forcar_atualizacao') {
+          console.log('Comando remoto recebido: capturando posição agora.');
+          geo.getCurrentPosition(
+            (pos) => processarNovaPosicao(pos),
+            (err) => console.error('Erro ao capturar posição pedida remotamente', err),
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+          );
+        }
+      });
+    } catch (e) {
+      console.error('Não foi possível registrar as notificações push', e);
+    }
   }
 
   function salvarSessaoLocal(viagemId, placa) {
@@ -648,7 +766,8 @@
         placa: placa,
         modelo: modelo,
         departamento: departamento,
-        setor: setor
+        setor: setor,
+        firebase_token: firebaseTokenAtual
       });
 
       document.getElementById('aviso-duplicata').style.display = 'none';
@@ -720,7 +839,7 @@
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    geo.getCurrentPosition(
       (pos) => criarNovaViagemEIniciar(pos, placa, modelo, nome, matricula, departamento, setor),
       (err) => {
         console.error('Erro de geolocalização', err);
@@ -737,7 +856,7 @@
 
     await db.from('viagens').update({ status: 'finalizada', fim: new Date().toISOString() }).eq('id', d.viagemAbertaId);
 
-    navigator.geolocation.getCurrentPosition(
+    geo.getCurrentPosition(
       (pos) => criarNovaViagemEIniciar(pos, d.placa, d.modelo, d.nome, d.matricula, d.departamento, d.setor),
       (err) => {
         console.error('Erro de geolocalização', err);
@@ -794,7 +913,7 @@
       const timer = setTimeout(() => {
         if (!jaResolveu) { jaResolveu = true; resolve(null); }
       }, prazoMs);
-      navigator.geolocation.getCurrentPosition(
+      geo.getCurrentPosition(
         (pos) => {
           if (!jaResolveu) { jaResolveu = true; clearTimeout(timer); resolve(pos); }
         },
@@ -933,6 +1052,7 @@
 
   preencherDadosMotoristaSalvos();
   restaurarSessaoAoAbrir();
+  registrarPushNotifications();
   tentarEnviarFilaOffline();
   tentarFinalizarPendente();
 </script>
