@@ -1,0 +1,32 @@
+[33mcommit ba3b8a0412f8fe522e72e024d8614ab9e61e04fe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: rastreamentotransporte2026-glitch <rastreamentotransporte2026@gmail.com>
+Date:   Fri Jul 31 16:23:47 2026 +0000
+
+    Adiciona configuracao do Firebase
+
+ .../8.2.1/executionHistory/executionHistory.bin   | Bin [31m1626554[m -> [32m1626554[m bytes
+ .../8.2.1/executionHistory/executionHistory.lock  | Bin [31m17[m -> [32m17[m bytes
+ android/.gradle/8.2.1/fileHashes/fileHashes.bin   | Bin [31m83315[m -> [32m83315[m bytes
+ android/.gradle/8.2.1/fileHashes/fileHashes.lock  | Bin [31m17[m -> [32m17[m bytes
+ .../buildOutputCleanup/buildOutputCleanup.lock    | Bin [31m17[m -> [32m17[m bytes
+ android/app/build.gradle                          |   2 [32m+[m
+ .../intermediates/assets/debug/public/index.html  |  32 [32m+[m[31m-[m
+ .../debug/out/assets/public/index.html.jar        | Bin [31m10664[m -> [32m10919[m bytes
+ .../compile-file-map.properties                   |   2 [32m+[m[31m-[m
+ .../compile-file-map.properties                   |   2 [32m+[m[31m-[m
+ .../packageDebug/tmp/debug/dex-renamer-state.txt  |   2 [32m+[m[31m-[m
+ .../tmp/debug/zip-cache/androidResources          | Bin [31m45471[m -> [32m45471[m bytes
+ .../debug/manifest-merger-blame-debug-report.txt  | 399 [32m+++++++++[m[31m----------[m
+ .../merged_manifest/debug/AndroidManifest.xml     |  15 [32m+[m[31m-[m
+ .../merged_manifests/debug/AndroidManifest.xml    |  15 [32m+[m[31m-[m
+ .../packaged_manifests/debug/AndroidManifest.xml  |  15 [32m+[m[31m-[m
+ .../processed_res/debug/out/resources-debug.ap_   | Bin [31m925971[m -> [32m926067[m bytes
+ android/app/build/outputs/apk/debug/app-debug.apk | Bin [31m4259159[m -> [32m4259509[m bytes
+ .../outputs/logs/manifest-merger-debug-report.txt |  74 [32m++[m[31m--[m
+ android/app/google-services.json                  |  29 [32m++[m
+ android/app/src/main/AndroidManifest.xml          |  12 [32m+[m[31m-[m
+ android/app/src/main/assets/public/index.html     |  32 [32m+[m[31m-[m
+ .../compile-file-map.properties                   |   2 [32m+[m[31m-[m
+ .../compile-file-map.properties                   |   2 [32m+[m[31m-[m
+ .../compile-file-map.properties                   |   2 [32m+[m[31m-[m
+ 25 files changed, 353 insertions(+), 284 deletions(-)

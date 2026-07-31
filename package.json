@@ -6,9 +6,11 @@
     "sync": "cap sync android"
   },
   "dependencies": {
+    "@capacitor-community/background-geolocation": "^1.2.20",
     "@capacitor/android": "^6.1.2",
     "@capacitor/core": "^6.1.2",
-    "@capacitor-community/background-geolocation": "^1.2.20"
+    "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/push-notifications": "^8.1.2"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.2"
