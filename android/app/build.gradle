@@ -30,6 +30,12 @@ repositories {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'org.bouncycastle:bcprov-jdk18on:1.77'
+    }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
